@@ -12,7 +12,7 @@
   .button-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
   .advanced{display:none;border:1px solid #ddd;padding:10px;border-radius:6px;margin-top:8px}
   .label-block{border:1px solid #eee;padding:8px;margin:8px 0;border-radius:6px}
-  #allPreviews{display:flex;flex-direction:column;gap:38px;margin-top:18px}
+  #allPreviews{display:flex;flex-direction:column;gap:38px;margin-top:10px}
   canvas{width:378px;height:283px;border:1px solid #ccc;border-radius:6px}
 </style>
 </head>
@@ -182,7 +182,7 @@ function renderLabelInputs(){
 function collectData(){
   const total = Math.max(1, parseInt(numLabelsEl.value || 1));
   const result = {
-    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:18 },
+    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:10 },
     global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
     sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
     fonts: { line1: font1.value, line2: font2.value, line3: font3.value, line1_bold: bold1.checked, line1_italic: italic1.checked, line2_bold: bold2.checked, line2_italic: italic2.checked, line3_bold: bold3.checked, line3_italic: italic3.checked },
@@ -339,7 +339,7 @@ function downloadJson(){
 /* Collect data similarly to earlier spec */
 function collectData(){
   const obj = {
-    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:18 },
+    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:10 },
     global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
     sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked ? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
     fonts: { line1: font1.value, line2: font2.value, line3: font3.value, line1_bold: bold1.checked, line1_italic: italic1.checked, line2_bold: bold2.checked, line2_italic: italic2.checked, line3_bold: bold3.checked, line3_italic: italic3.checked },
