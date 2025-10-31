@@ -17,9 +17,9 @@
 </style>
 </head>
 <body>
-  <h2>Label Generator 45 v1.17</h2>
+  <h2>Label Generator 45 v1.12</h2>
   <p style="max-width:900px;text-align:center">
-    Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see what your labels look like. Click <strong>Download Layout Instructions </strong> to get a JSON file with instructions to engrave your labels.
+    Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see what your labels look like. Click <strong>Download Layout Instructions</strong> to save instructions engraving. It will download a text file.
   </p>
 
   <form id="mainForm" onsubmit="return false;">
@@ -27,11 +27,11 @@
     <label>Line 1: <input id="line1" type="text" value="1st line"></label>
     <label>Line 2: <input id="line2" type="text" value="2nd line"></label>
     <label>Line 3: <input id="line3" type="text" value="3rd line"></label>
-    <label>How many of this design? <input id="qty1" type="number" min="1" value="1" style="width:60px"></label>
+    <label>Quantity: <input id="qty1" type="number" min="1" value="1"></label>
 
     <div class="button-row" id="topButtons">
       <button id="previewBtn" type="button">Preview Label(s)</button>
-      <button id="downloadBtn" type="button">Download Layout Instructions (JSON)</button>
+      <button id="downloadBtn" type="button">Download Layout Instructions</button>
       <button id="toggleAdvanced" type="button">Show Advanced Options</button>
     </div>
 
@@ -101,23 +101,26 @@
   </form>
 
   <h3>Multiple Labels</h3>
-  <label>Total labels (including label 1): <input id="numLabels" type="number" min="1" value="1"></label>
+  <label>Total labels (including Label 1): <input id="numLabels" type="number" min="1" value="1"></label>
   <div id="labelsContainer"></div>
 
   <div id="allPreviews"></div>
 
 <script>
+/* --- Utilities --- */
 const mmToPx = mm => Math.round(mm * 3.78);
 
-/* DOM refs */
+/* --- DOM refs --- */
 const line1 = document.getElementById('line1');
 const line2 = document.getElementById('line2');
 const line3 = document.getElementById('line3');
 const qty1 = document.getElementById('qty1');
+
 const previewBtn = document.getElementById('previewBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
 const advancedOptions = document.getElementById('advancedOptions');
+
 const numLabelsEl = document.getElementById('numLabels');
 const labelsContainer = document.getElementById('labelsContainer');
 const allPreviews = document.getElementById('allPreviews');
@@ -149,7 +152,7 @@ const gap12Label = document.getElementById('gap12Label');
 const gap23Label = document.getElementById('gap23Label');
 const textShiftLabel = document.getElementById('textShiftLabel');
 
-/* update numeric labels */
+/* --- Helpers --- */
 function updateNumericLabels(){
   largeSizeLabel.textContent = largeSize.value;
   smallSizeLabel.textContent = smallSize.value;
@@ -171,7 +174,7 @@ function renderLabelInputs(){
       <label>Line 1: <input class="multi1" type="text" value="1st line"></label>
       <label>Line 2: <input class="multi2" type="text" value="2nd line"></label>
       <label>Line 3: <input class="multi3" type="text" value="3rd line"></label>
-      <label>How many of this design? <input class="qty" type="number" min="1" value="1" style="width:60px"></label>
+      <label>Quantity: <input class="qty" type="number" min="1" value="1"></label>
     `;
     labelsContainer.appendChild(block);
   }
@@ -180,7 +183,7 @@ function renderLabelInputs(){
 /* collect all labels into structured data */
 function collectData(){
   const total = Math.max(1, parseInt(numLabelsEl.value || 1));
-  const obj = {
+  const result = {
     canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:10 },
     global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
     sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
@@ -189,34 +192,34 @@ function collectData(){
   };
 
   // Label 1
-  obj.labels.push({
+  result.labels.push({
     name: "Label 1",
     qty: parseInt(qty1.value) || 1,
     lines: {
-      line1: { text: line1.value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-      line2: { text: line2.value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-      line3: { text: line3.value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+      line1: { text: line1.value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+      line2: { text: line2.value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+      line3: { text: line3.value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
     }
   });
 
-  // Additional labels
+  // Additional labels: inputs .multi1/.multi2/.multi3
   const m1 = document.querySelectorAll('.multi1');
   const m2 = document.querySelectorAll('.multi2');
   const m3 = document.querySelectorAll('.multi3');
-  const mQty = document.querySelectorAll('.qty');
+  const qtyEls = document.querySelectorAll('.qty');
   for(let i=0;i<m1.length;i++){
-    obj.labels.push({
+    result.labels.push({
       name: `Label ${i+2}`,
-      qty: parseInt(mQty[i].value) || 1,
+      qty: parseInt(qtyEls[i].value)||1,
       lines: {
-        line1: { text: m1[i].value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-        line2: { text: m2[i].value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-        line3: { text: m3[i].value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+        line1: { text: m1[i].value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+        line2: { text: m2[i].value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+        line3: { text: m3[i].value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
       }
     });
   }
 
-  return obj;
+  return result;
 }
 
 /* draw a single label to a canvas (PNG preview) */
@@ -228,6 +231,7 @@ function drawLabelToCanvas(labelObj, params){
   const circleTopPx = mmToPx(params.canvas.circle_top_mm);
   const marginSidePx = mmToPx(params.canvas.margin_side_mm);
   const topExtraPx = mmToPx(params.canvas.top_margin_extra_mm);
+
   const textShiftPx = mmToPx(params.global.text_shift_mm || 0);
   const gap12Px = mmToPx(params.global.gap12_mm || 0);
   const gap23Px = mmToPx(params.global.linkGaps ? params.global.gap12_mm : params.global.gap23_mm || 0);
@@ -236,6 +240,7 @@ function drawLabelToCanvas(labelObj, params){
   c.width = Wpx; c.height = Hpx;
   const ctx = c.getContext('2d');
 
+  // background
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.moveTo(radius,0);
@@ -250,16 +255,19 @@ function drawLabelToCanvas(labelObj, params){
   ctx.closePath();
   ctx.fill();
 
+  // circle
   ctx.beginPath();
   ctx.arc(Wpx/2, circleTopPx + circleRPx, circleRPx, 0, Math.PI*2);
   ctx.fillStyle = '#fff';
   ctx.fill();
 
+  // prepare lines with new logic
   const lines = [];
-  if(labelObj.lines.line1 && labelObj.lines.line1.text) lines.push({ ...labelObj.lines.line1 });
-  if(labelObj.lines.line2 && labelObj.lines.line2.text) lines.push({ ...labelObj.lines.line2 });
-  if(labelObj.lines.line3 && labelObj.lines.line3.text) lines.push({ ...labelObj.lines.line3 });
+  lines.push({ ...labelObj.lines.line1 });
+  if (labelObj.lines.line2.text || labelObj.lines.line3.text) lines.push({ ...labelObj.lines.line2 });
+  if (labelObj.lines.line3.text) lines.push({ ...labelObj.lines.line3 });
 
+  // compute total height
   let totalH = 0;
   lines.forEach((ln,i)=>{
     totalH += ln.size;
@@ -283,47 +291,43 @@ function drawLabelToCanvas(labelObj, params){
     fontStr += `${ln.size}px ${ln.font || 'Arial'}`;
     ctx.font = fontStr;
 
-    const maxWidth = Wpx - marginSidePx * 2;
+    const maxWidth = Wpx - marginSidePx*2;
     const measured = ctx.measureText(ln.text).width;
     const scaleX = Math.min(1, maxWidth / measured);
 
-    if(scaleX < 1){
+    if(scaleX<1){
       ctx.save();
-      ctx.translate(Wpx/2, startY);
-      ctx.scale(scaleX, 1);
-      ctx.fillText(ln.text, 0, 0);
+      ctx.translate(Wpx/2,startY);
+      ctx.scale(scaleX,1);
+      ctx.fillText(ln.text,0,0);
       ctx.restore();
-    } else {
-      ctx.fillText(ln.text, Wpx/2, startY);
-    }
+    } else ctx.fillText(ln.text, Wpx/2, startY);
 
-    if(i===0 && lines.length>1) startY += gap12Px + (lines[1] ? lines[1].size : 0);
-    else if(i===1 && lines.length>2) startY += gap23Px + (lines[2] ? lines[2].size : 0);
+    if(i===0 && lines.length>1) startY += gap12Px + (lines[1]?lines[1].size:0);
+    else if(i===1 && lines.length>2) startY += gap23Px + (lines[2]?lines[2].size:0);
   });
 
   return c;
 }
 
-/* preview all labels with quantity display */
+/* Preview logic */
 function previewLabels(){
   const data = collectData();
   allPreviews.innerHTML = '';
   data.labels.forEach(lbl=>{
-    const c = drawLabelToCanvas(lbl, data);
-    const wrapper = document.createElement('div');
-    const title = document.createElement('div');
-    title.textContent = `${lbl.name} — ${lbl.qty} copies`;
-    title.style.textAlign = 'center';
-    wrapper.appendChild(title);
-    wrapper.appendChild(c);
-    allPreviews.appendChild(wrapper);
+    for(let i=0;i<lbl.qty;i++){
+      const c = drawLabelToCanvas(lbl, data);
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(c);
+      allPreviews.appendChild(wrapper);
+    }
   });
 }
 
-/* download JSON */
+/* Download JSON */
 function downloadJson(){
   const data = collectData();
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'labels.json';
@@ -338,12 +342,11 @@ toggleAdvancedBtn.addEventListener('click', ()=>{
 
 numLabelsEl.addEventListener('change', renderLabelInputs);
 renderLabelInputs();
-
-[largeSize, smallSize, line3Size, gap12, gap23, textShift].forEach(el=>el.addEventListener('input', updateNumericLabels));
+[largeSize, smallSize, line3Size, gap12, gap23, textShift].forEach(el=>el.addEventListener('input',updateNumericLabels));
 updateNumericLabels();
-
 previewBtn.addEventListener('click', previewLabels);
 downloadBtn.addEventListener('click', downloadJson);
+
 </script>
 </body>
 </html>
