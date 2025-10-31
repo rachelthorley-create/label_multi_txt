@@ -17,9 +17,9 @@
 </style>
 </head>
 <body>
-<h2>Label Generator v1.21</h2>
+<h2>Label Generator v1.22</h2>
 <p style="max-width:900px;text-align:center">
-Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export JSON for all labels.
+Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export engraving instruction file for all labels.
 </p>
 
 <form id="mainForm" onsubmit="return false;">
@@ -33,7 +33,7 @@ Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> 
 
 <div class="button-row" id="topButtons">
   <button id="previewBtn" type="button">Preview Label(s)</button>
-  <button id="downloadBtn" type="button">Download Layout Instructions (JSON)</button>
+  <button id="downloadBtn" type="button">Download engraving Instruction file</button>
   <button id="toggleAdvanced" type="button">Show Advanced Options</button>
 </div>
 
@@ -79,21 +79,36 @@ Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> 
   <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
     <div style="flex:1;min-width:180px">
       <label>Line 1 font
-        <select id="font1"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font1"><option selected>Arial</option>
+    <option>Verdana</option>
+    <option>Times New Roman</option>
+    <option>Georgia</option>
+    <option>Courier New</option>
+    <option>Trebuchet MS</option></select>
       </label>
       <label><input id="bold1" type="checkbox" checked> Bold</label>
       <label><input id="italic1" type="checkbox"> Italic</label>
     </div>
     <div style="flex:1;min-width:180px">
       <label>Line 2 font
-        <select id="font2"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font2"><option selected>Arial</option>
+    <option>Verdana</option>
+    <option>Times New Roman</option>
+    <option>Georgia</option>
+    <option>Courier New</option>
+    <option>Trebuchet MS</option></select>
       </label>
       <label><input id="bold2" type="checkbox"> Bold</label>
       <label><input id="italic2" type="checkbox" checked> Italic</label>
     </div>
     <div style="flex:1;min-width:180px">
       <label>Line 3 font
-        <select id="font3"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font3"><option selected>Arial</option>
+    <option>Verdana</option>
+    <option>Times New Roman</option>
+    <option>Georgia</option>
+    <option>Courier New</option>
+    <option>Trebuchet MS</option></select>
       </label>
       <label><input id="bold3" type="checkbox"> Bold</label>
       <label><input id="italic3" type="checkbox"> Italic</label>
