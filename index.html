@@ -12,9 +12,10 @@
   input[type="text"], input[type="number"] { width:100%; padding:4px; }
   .slider-container { margin:8px 0; }
   .advanced { display:none; border:1px solid #ccc; padding:10px; margin-top:10px; border-radius:8px; }
-  button { margin-top:10px; padding:6px 12px; }
+  button { padding:6px 12px; }
+  .button-row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
   canvas { border:1px solid #ccc; border-radius:8px; }
-  #allPreviews { display:flex; flex-direction:column; gap:38px; margin-top:20px; } /* ~10mm vertical spacing */
+  #allPreviews { display:flex; flex-direction:column; gap:38px; margin-top:20px; } /* ~10mm spacing */
 </style>
 </head>
 <body>
@@ -23,22 +24,27 @@
 <p>Enter text for each line. All fields are optional. Adjust settings as needed, then click <b>Preview Label(s)</b> to view and export.</p>
 
 <form id="labelForm">
-  <h3>Label 1 (Primary Label)</h3>
+  <h3>Label 1 (Primary Label - this is used to design the layout of your labels. I suggest you use the one where you want the most text for this)</h3>
   <label>Line 1: <input id="line1" type="text" value="1st line"></label>
   <label>Line 2: <input id="line2" type="text" value="2nd line"></label>
   <label>Line 3: <input id="line3" type="text" value="3rd line"></label>
 
-  <div class="slider-container">
-    <label>Large text size (line 1): <span id="largeSizeLabel">54</span>
-    <input id="largeSize" type="range" min="20" max="100" value="54"></label>
-  </div>
-  <div class="slider-container">
-    <label>Small text size (line 2): <span id="smallSizeLabel">27</span>
-    <input id="smallSize" type="range" min="10" max="60" value="27"></label>
+  <div class="button-row">
+    <button type="button" id="previewBtn">Preview Label(s)</button>
+    <button type="button" id="downloadBtn">Download Layout Instructions (JSON)</button>
+    <button type="button" id="toggleAdvanced">Show Advanced Options</button>
   </div>
 
-  <button type="button" id="toggleAdvanced">Show Advanced Options</button>
   <div class="advanced" id="advancedOptions">
+    <div class="slider-container">
+      <label>Large text size (line 1): <span id="largeSizeLabel">54</span>
+      <input id="largeSize" type="range" min="20" max="100" value="54"></label>
+    </div>
+    <div class="slider-container">
+      <label>Small text size (line 2): <span id="smallSizeLabel">27</span>
+      <input id="smallSize" type="range" min="10" max="60" value="27"></label>
+    </div>
+
     <div class="slider-container">
       <label>Line 3 text size: <span id="line3SizeLabel">27</span>
       <input id="line3Size" type="range" min="10" max="60" value="27"></label>
@@ -60,21 +66,21 @@
 
     <div class="slider-container">
       <label>Line 1 font:
-        <select id="font1"><option>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font1"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
       </label>
       <label><input type="checkbox" id="bold1" checked> Bold</label>
       <label><input type="checkbox" id="italic1"> Italic</label>
     </div>
     <div class="slider-container">
       <label>Line 2 font:
-        <select id="font2"><option>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font2"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
       </label>
       <label><input type="checkbox" id="bold2"> Bold</label>
       <label><input type="checkbox" id="italic2" checked> Italic</label>
     </div>
     <div class="slider-container">
       <label>Line 3 font:
-        <select id="font3"><option>Arial</option><option>Verdana</option><option>Courier New</option></select>
+        <select id="font3"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
       </label>
       <label><input type="checkbox" id="bold3"> Bold</label>
       <label><input type="checkbox" id="italic3"> Italic</label>
@@ -86,39 +92,12 @@
 <label>Total labels: <input id="numLabels" type="number" min="1" value="1"></label>
 <div id="labelsContainer"></div>
 
-<div style="display:flex; gap:10px; margin-top:10px;">
-  <button type="button" id="previewBtn">Preview Label(s)</button>
-  <button type="button" id="downloadBtn">Download Layout Instructions (JSON)</button>
-</div>
-
 <div id="allPreviews"></div>
 
 <script>
 const mmToPx = mm => mm * 3.78;
 
-// Inputs
-const line1=document.getElementById('line1');
-const line2=document.getElementById('line2');
-const line3=document.getElementById('line3');
-const large=document.getElementById('largeSize');
-const small=document.getElementById('smallSize');
-const line3Size=document.getElementById('line3Size');
-const link23=document.getElementById('link23');
-const gap12=document.getElementById('gap12');
-const gap23=document.getElementById('gap23');
-const linkGaps=document.getElementById('linkGaps');
-const textShift=document.getElementById('textShift');
-const font1=document.getElementById('font1');
-const font2=document.getElementById('font2');
-const font3=document.getElementById('font3');
-const bold1=document.getElementById('bold1');
-const italic1=document.getElementById('italic1');
-const bold2=document.getElementById('bold2');
-const italic2=document.getElementById('italic2');
-const bold3=document.getElementById('bold3');
-const italic3=document.getElementById('italic3');
-
-// Show/hide advanced
+// Advanced toggle
 document.getElementById('toggleAdvanced').addEventListener('click',()=>{
   const adv=document.getElementById('advancedOptions');
   const btn=document.getElementById('toggleAdvanced');
@@ -126,7 +105,7 @@ document.getElementById('toggleAdvanced').addEventListener('click',()=>{
   btn.textContent = adv.style.display==='none'?'Show Advanced Options':'Hide Advanced Options';
 });
 
-// Generate multiple label inputs
+// Dynamic label fields
 function renderLabelInputs(){
   const n=parseInt(document.getElementById('numLabels').value);
   const container=document.getElementById('labelsContainer');
@@ -143,15 +122,17 @@ function renderLabelInputs(){
 document.getElementById('numLabels').addEventListener('change',renderLabelInputs);
 renderLabelInputs();
 
-// Draw label on canvas
+// Draw label
 function drawLabel(data){
   const canvas=document.createElement('canvas');
   canvas.width=mmToPx(100);
   canvas.height=mmToPx(75);
   const ctx=canvas.getContext('2d');
-  ctx.fillStyle='black';
   const radius=mmToPx(2);
   const w=canvas.width, h=canvas.height;
+  
+  // Background
+  ctx.fillStyle='black';
   ctx.beginPath();
   ctx.moveTo(radius,0);
   ctx.lineTo(w-radius,0);
@@ -164,7 +145,7 @@ function drawLabel(data){
   ctx.quadraticCurveTo(0,0,radius,0);
   ctx.fill();
 
-  // white circle
+  // White circle
   const circleR=mmToPx(3);
   const circleY=mmToPx(6+3);
   ctx.beginPath();
@@ -172,12 +153,12 @@ function drawLabel(data){
   ctx.fillStyle='white';
   ctx.fill();
 
-  // text
-  ctx.fillStyle='white';
-  const marginTop=mmToPx(14+data.textShift);
+  // Text block baseline (lowered ~2mm)
+  const marginTop=mmToPx(18+data.textShift);
   const spacing12=mmToPx(data.gap12);
   const spacing23=mmToPx(data.gap23);
-  const availableHeight=h-marginTop-mmToPx(3);
+  const marginSide=mmToPx(6);
+  
   let y=marginTop;
   const lines=[data.line1,data.line2,data.line3].filter(l=>l.text);
   lines.forEach((l,i)=>{
@@ -188,17 +169,30 @@ function drawLabel(data){
     ctx.font=fontStr;
     ctx.textAlign='center';
     ctx.textBaseline='top';
-    ctx.fillText(l.text,w/2,y);
+    ctx.fillStyle='white';
+    // Fit scaling
+    let textWidth = ctx.measureText(l.text).width;
+    const maxWidth = w - marginSide*2;
+    if(textWidth > maxWidth){
+      const scale = maxWidth / textWidth;
+      ctx.save();
+      ctx.translate(w/2, y);
+      ctx.scale(scale, scale);
+      ctx.fillText(l.text, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.fillText(l.text, w/2, y);
+    }
     y+=l.font_size+(i===0?spacing12:spacing23);
   });
   return canvas;
 }
 
-// Get label data from UI
+// Collect data
 function collectData(){
   const num=parseInt(document.getElementById('numLabels').value);
   const base={
-    canvas:{width_mm:100,height_mm:75,corner_radius_mm:2,circle_diameter_mm:6,circle_top_mm:6,margin_side_mm:3,margin_top_mm:14},
+    canvas:{width_mm:100,height_mm:75,corner_radius_mm:2,circle_diameter_mm:6,circle_top_mm:6,margin_side_mm:6,margin_top_mm:18},
     global:{text_shift_mm:parseFloat(textShift.value),gap12_mm:parseFloat(gap12.value),gap23_mm:parseFloat(gap23.value)},
     labels:[]
   };
@@ -229,7 +223,7 @@ function collectData(){
   return base;
 }
 
-// Preview all labels
+// Preview all
 function previewAll(){
   const data=collectData();
   const container=document.getElementById('allPreviews');
@@ -247,7 +241,7 @@ function previewAll(){
   });
 }
 
-// Download JSON file
+// Download JSON
 function downloadJSON(){
   const data=collectData();
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'text/plain'});
@@ -257,10 +251,10 @@ function downloadJSON(){
   a.click();
 }
 
-// Listeners
 document.getElementById('previewBtn').addEventListener('click',previewAll);
 document.getElementById('downloadBtn').addEventListener('click',downloadJSON);
 </script>
 
 </body>
 </html>
+
