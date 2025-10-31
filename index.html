@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-  <h2>Label Generator 45 v1.10</h2>
+  <h2>Label Generator 45 v1.11</h2>
   <p style="max-width:900px;text-align:center">
     Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see what your labels look like. Click <strong>Download Layout Instructions </strong>, this is the file with instructions to engrave your labels.
   </p>
@@ -278,7 +278,7 @@ function drawLabelToCanvas(labelObj, params){
   const avail = bottomY - topTextY;
 
   // center block vertically but slightly lower: factor 0.55 (a bit lower than center)
-  let startY = topTextY + (avail - totalH) * 0.45 + (lines.length>0 ? lines[0].size*0.75 : 0);
+  let startY = topTextY + (avail - totalH) * 0.55 + (lines.length>0 ? lines[0].size*0.75 : 0);
 
   // draw each line with horizontal scaling if needed
   ctx.fillStyle = '#fff';
