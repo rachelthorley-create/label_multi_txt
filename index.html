@@ -8,7 +8,7 @@
   body{font-family:Arial,Helvetica,sans-serif;margin:18px;display:flex;flex-direction:column;align-items:center}
   form{width:100%;max-width:900px}
   label{display:block;margin:6px 0}
-  input[type="text"],input[type="number"],input[type="email"],select{width:100%;padding:6px;box-sizing:border-box}
+  input[type="text"],input[type="number"],select{width:100%;padding:6px;box-sizing:border-box}
   .button-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
   .advanced{display:none;border:1px solid #ddd;padding:10px;border-radius:6px;margin-top:8px}
   .label-block{border:1px solid #eee;padding:8px;margin:8px 0;border-radius:6px}
@@ -17,17 +17,10 @@
 </style>
 </head>
 <body>
-
 <h2>Label Generator v1.27</h2>
 <p style="max-width:900px;text-align:center">
 Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export engraving instruction file for all labels.
 </p>
-
-<!-- Name & Email for submission -->
-<div style="width:100%;max-width:900px;margin-bottom:12px;">
-  <label>Your Name: <input id="userName" type="text"></label>
-  <label>Your Email: <input id="userEmail" type="email"></label>
-</div>
 
 <form id="mainForm" onsubmit="return false;">
 <h3>Label 1 (Primary Label)</h3>
@@ -42,12 +35,82 @@ Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> 
   <button id="previewBtn" type="button">Preview Label(s)</button>
   <button id="downloadBtn" type="button">Download engraving Instruction file</button>
   <button id="toggleAdvanced" type="button">Show Advanced Options</button>
-  <button id="submitBtn" type="button">Submit Labels</button>
 </div>
 
 <div class="advanced" id="advancedOptions">
-  <!-- advanced controls unchanged -->
-  <!-- ... (same as your original advancedOptions block) -->
+  <div style="display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:180px">
+      <label>Large text size (line 1): <span id="largeSizeLabel">54</span>
+        <input id="largeSize" type="range" min="20" max="100" value="54">
+      </label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Small text size (line 2): <span id="smallSizeLabel">27</span>
+        <input id="smallSize" type="range" min="10" max="60" value="27">
+      </label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Line 3 size: <span id="line3SizeLabel">27</span>
+        <input id="line3Size" type="range" min="10" max="60" value="27">
+      </label>
+      <label><input id="link23" type="checkbox" checked> Link line3 to line2</label>
+    </div>
+  </div>
+
+  <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:180px">
+      <label>Gap line1→line2: <span id="gap12Label">4</span>
+        <input id="gap12" type="range" min="0" max="20" value="4">
+      </label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Gap line2→line3: <span id="gap23Label">3</span>
+        <input id="gap23" type="range" min="0" max="20" value="3">
+      </label>
+      <label><input id="linkGaps" type="checkbox"> Make gap2-3 = gap1-2</label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Text vertical shift: <span id="textShiftLabel">0</span>
+        <input id="textShift" type="range" min="-20" max="20" value="0">
+      </label>
+    </div>
+  </div>
+
+  <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+    <div style="flex:1;min-width:180px">
+      <label>Line 1 font
+        <select id="font1"><option selected>Arial</option>
+    <option>Times New Roman</option>
+    <option>Trebuchet MS</option>
+    <option>Century Gothic</option>
+    <option>Lucida Handwriting</option></select>
+      </label>
+      <label><input id="bold1" type="checkbox" checked> Bold</label>
+      <label><input id="italic1" type="checkbox"> Italic</label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Line 2 font
+        <select id="font2"><option selected>Arial</option>
+    <option>Times New Roman</option>
+    <option>Trebuchet MS</option>
+    <option>Century Gothic</option>
+    <option>Lucida Handwriting</option></select>
+      </label>
+      <label><input id="bold2" type="checkbox"> Bold</label>
+      <label><input id="italic2" type="checkbox" checked> Italic</label>
+    </div>
+    <div style="flex:1;min-width:180px">
+      <label>Line 3 font
+        <select id="font3"><option selected>Arial</option>
+    <option>Times New Roman</option>
+    <option>Trebuchet MS</option>
+    <option>Century Gothic</option>
+    <option>Lucida Handwriting</option></select>
+      </label>
+      <label><input id="bold3" type="checkbox"> Bold</label>
+      <label><input id="italic3" type="checkbox"> Italic</label>
+    </div>
+  </div>
 </div>
 </form>
 
@@ -67,16 +130,12 @@ const qty1=document.getElementById('qty1');
 
 const previewBtn=document.getElementById('previewBtn');
 const downloadBtn=document.getElementById('downloadBtn');
-const submitBtn=document.getElementById('submitBtn');
 const toggleAdvancedBtn=document.getElementById('toggleAdvanced');
 const advancedOptions=document.getElementById('advancedOptions');
 
 const numLabelsEl=document.getElementById('numLabels');
 const labelsContainer=document.getElementById('labelsContainer');
 const allPreviews=document.getElementById('allPreviews');
-
-const userName=document.getElementById('userName');
-const userEmail=document.getElementById('userEmail');
 
 /* advanced controls */
 const largeSize=document.getElementById('largeSize');
@@ -130,7 +189,7 @@ function renderLabelInputs(){
   }
 }
 
-/* Collect all label data */
+/* Collect all labels and qty */
 function collectData(){
   const total=Math.max(1,parseInt(numLabelsEl.value||1));
   const obj={
@@ -168,29 +227,108 @@ function collectData(){
       }
     });
   }
+
   return obj;
 }
 
-/* Submit data to Google Sheet */
-function submitToGoogleSheet(){
-  const name=userName.value.trim();
-  const email=userEmail.value.trim();
-  if(!name || !email) return alert("Please enter your name and email");
+/* Draw a single label canvas */
+function drawLabelToCanvas(labelObj, params){
+  const Wpx=mmToPx(params.canvas.width_mm);
+  const Hpx=mmToPx(params.canvas.height_mm);
+  const radius=mmToPx(params.canvas.corner_radius_mm);
+  const circleRPx=mmToPx(params.canvas.circle_diameter_mm/2);
+  const circleTopPx=mmToPx(params.canvas.circle_top_mm);
+  const marginSidePx=mmToPx(params.canvas.margin_side_mm);
+  const topExtraPx=mmToPx(params.canvas.top_margin_extra_mm);
+  const textShiftPx=mmToPx(params.global.text_shift_mm||0);
+  const gap12Px=mmToPx(params.global.gap12_mm||0);
+  const gap23Px=mmToPx(params.global.linkGaps?params.global.gap12_mm:params.global.gap23_mm||0);
 
-  const data=collectData();
-  if(!data.labels.length) return alert("No labels to submit");
+  const c=document.createElement('canvas');
+  c.width=Wpx; c.height=Hpx;
+  const ctx=c.getContext('2d');
 
-  fetch("YOUR_GOOGLE_APPS_SCRIPT_URL",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body: JSON.stringify({name,email,data})
-  })
-  .then(res=>res.json())
-  .then(resp=>alert(`Submission successful! Reference: ${resp.reference}`))
-  .catch(err=>alert("Submission failed: "+err));
+  // Background
+  ctx.fillStyle='#000';
+  ctx.beginPath();
+  ctx.moveTo(radius,0); ctx.lineTo(Wpx-radius,0);
+  ctx.quadraticCurveTo(Wpx,0,Wpx,radius);
+  ctx.lineTo(Wpx,Hpx-radius);
+  ctx.quadraticCurveTo(Wpx,Hpx,Wpx-radius,Hpx);
+  ctx.lineTo(radius,Hpx);
+  ctx.quadraticCurveTo(0,Hpx,0,Hpx-radius);
+  ctx.lineTo(0,radius);
+  ctx.quadraticCurveTo(0,0,radius,0);
+  ctx.closePath(); ctx.fill();
+
+  // Circle
+  ctx.beginPath();
+  ctx.arc(Wpx/2,circleTopPx+circleRPx,circleRPx,0,Math.PI*2);
+  ctx.fillStyle='#fff'; ctx.fill();
+
+  // Prepare lines (keep blank line2 if line3 present)
+  const lines=[];
+  if(labelObj.lines.line1) lines.push(labelObj.lines.line1);
+  if(labelObj.lines.line2 || labelObj.lines.line3) lines.push(labelObj.lines.line2);
+  if(labelObj.lines.line3 && labelObj.lines.line3.text.trim()!=='') lines.push(labelObj.lines.line3);
+
+  // Total height
+  let totalH=0;
+  lines.forEach((ln,i)=>{
+    totalH+=ln.size;
+    if(i===0 && lines.length>1) totalH+=gap12Px;
+    if(i===1 && lines.length>2) totalH+=gap23Px;
+  });
+
+  const topTextY=circleTopPx+circleRPx+topExtraPx+textShiftPx;
+  const bottomY=Hpx-marginSidePx;
+  const avail=bottomY-topTextY;
+  let startY=topTextY+(avail-totalH)*0.55+(lines.length>0?lines[0].size*0.75:0);
+
+  ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  lines.forEach((ln,i)=>{
+    let fontStr=''; if(ln.italic) fontStr+='italic '; if(ln.bold) fontStr+='bold ';
+    fontStr+=`${ln.size}px ${ln.font||'Arial'}`; ctx.font=fontStr;
+    const maxWidth=Wpx-marginSidePx*2;
+    const measured=ctx.measureText(ln.text).width;
+    const scaleX=Math.min(1,maxWidth/measured);
+    if(scaleX<1){ ctx.save(); ctx.translate(Wpx/2,startY); ctx.scale(scaleX,1); ctx.fillText(ln.text,0,0); ctx.restore(); }
+    else ctx.fillText(ln.text,Wpx/2,startY);
+    if(i===0 && lines.length>1) startY+=gap12Px+(lines[1]?lines[1].size:0);
+    else if(i===1 && lines.length>2) startY+=gap23Px+(lines[2]?lines[2].size:0);
+  });
+
+  return c;
 }
 
-/* Event listeners */
+/* Preview all labels and copies */
+
+function previewLabels(){
+  const data = collectData();
+  allPreviews.innerHTML = '';
+  data.labels.forEach(lbl => {
+    // Show label name with quantity
+    const header = document.createElement('div');
+    header.style.fontWeight = 'bold';
+    header.style.marginTop = '10px';
+    header.textContent = `${lbl.name} - ${lbl.qty} copies`;
+    allPreviews.appendChild(header);
+
+    // Only one PNG per label
+    const c = drawLabelToCanvas(lbl, data);
+    allPreviews.appendChild(c);
+  });
+}
+  
+/* Download JSON */
+function downloadJson(){
+  const data=collectData();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='labels.json'; a.click();
+}
+
+/* UI events */
 toggleAdvancedBtn.addEventListener('click',()=>{
   advancedOptions.style.display=advancedOptions.style.display==='block'?'none':'block';
   toggleAdvancedBtn.textContent=advancedOptions.style.display==='block'?'Hide Advanced Options':'Show Advanced Options';
@@ -198,38 +336,12 @@ toggleAdvancedBtn.addEventListener('click',()=>{
 
 numLabelsEl.addEventListener('change',renderLabelInputs);
 renderLabelInputs();
+
 [largeSize,smallSize,line3Size,gap12,gap23,textShift].forEach(el=>el.addEventListener('input',updateNumericLabels));
 updateNumericLabels();
 
-previewBtn.addEventListener('click',()=>{
-  const data=collectData();
-  allPreviews.innerHTML='';
-  data.labels.forEach(lbl=>{
-    const header=document.createElement('div');
-    header.style.fontWeight='bold';
-    header.textContent=`${lbl.name} - ${lbl.qty} copies`;
-    allPreviews.appendChild(header);
-    // draw single canvas
-    const c=document.createElement('canvas');
-    c.width=378; c.height=283;
-    const ctx=c.getContext('2d');
-    ctx.fillStyle='black';
-    ctx.fillRect(0,0,c.width,c.height);
-    ctx.fillStyle='white';
-    ctx.font='20px Arial';
-    ctx.fillText(lbl.lines.line1.text,50,50);
-    allPreviews.appendChild(c);
-  });
-});
-
-downloadBtn.addEventListener('click',()=>{
-  const data=collectData();
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='labels.json'; a.click();
-});
-
-submitBtn.addEventListener('click',submitToGoogleSheet);
+previewBtn.addEventListener('click',previewLabels);
+downloadBtn.addEventListener('click',downloadJson);
 </script>
 </body>
 </html>
