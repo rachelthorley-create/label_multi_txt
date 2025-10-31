@@ -17,7 +17,7 @@
 </style>
 </head>
 <body>
-<h2>Label Generator v1.20</h2>
+<h2>Label Generator v1.21</h2>
 <p style="max-width:900px;text-align:center">
 Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see your labels. Click <strong>Download Layout Instructions</strong> to export JSON for all labels.
 </p>
@@ -290,21 +290,24 @@ function drawLabelToCanvas(labelObj, params){
 }
 
 /* Preview all labels and copies */
+
 function previewLabels(){
-  const data=collectData();
-  allPreviews.innerHTML='';
-  data.labels.forEach(lbl=>{
-    const header=document.createElement('div');
-    header.style.fontWeight='bold'; header.style.marginTop='10px';
-    header.textContent=`${lbl.name} - ${lbl.qty} copies`;
+  const data = collectData();
+  allPreviews.innerHTML = '';
+  data.labels.forEach(lbl => {
+    // Show label name with quantity
+    const header = document.createElement('div');
+    header.style.fontWeight = 'bold';
+    header.style.marginTop = '10px';
+    header.textContent = `${lbl.name} - ${lbl.qty} copies`;
     allPreviews.appendChild(header);
-    for(let i=0;i<lbl.qty;i++){
-      const c=drawLabelToCanvas(lbl,data);
-      allPreviews.appendChild(c);
-    }
+
+    // Only one PNG per label
+    const c = drawLabelToCanvas(lbl, data);
+    allPreviews.appendChild(c);
   });
 }
-
+  
 /* Download JSON */
 function downloadJson(){
   const data=collectData();
