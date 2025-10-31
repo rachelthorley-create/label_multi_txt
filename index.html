@@ -17,16 +17,17 @@
 </style>
 </head>
 <body>
-  <h2>Label Generator 45 v1.11</h2>
+  <h2>Label Generator 45 v1.17</h2>
   <p style="max-width:900px;text-align:center">
-    Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see what your labels look like. Click <strong>Download Layout Instructions </strong>, this is the file with instructions to engrave your labels.
+    Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to see what your labels look like. Click <strong>Download Layout Instructions </strong> to get a JSON file with instructions to engrave your labels.
   </p>
 
   <form id="mainForm" onsubmit="return false;">
-    <h3>Label 1 (Primary Label)</h3>
+    <h3>Label 1 (Primary Label - this is used to design the layout of your labels. I suggest you use the one where you want the most text for this)</h3>
     <label>Line 1: <input id="line1" type="text" value="1st line"></label>
     <label>Line 2: <input id="line2" type="text" value="2nd line"></label>
     <label>Line 3: <input id="line3" type="text" value="3rd line"></label>
+    <label>How many of this design? <input id="qty1" type="number" min="1" value="1" style="width:60px"></label>
 
     <div class="button-row" id="topButtons">
       <button id="previewBtn" type="button">Preview Label(s)</button>
@@ -106,19 +107,17 @@
   <div id="allPreviews"></div>
 
 <script>
-/* --- Utilities --- */
 const mmToPx = mm => Math.round(mm * 3.78);
 
-/* --- DOM refs --- */
+/* DOM refs */
 const line1 = document.getElementById('line1');
 const line2 = document.getElementById('line2');
 const line3 = document.getElementById('line3');
-
+const qty1 = document.getElementById('qty1');
 const previewBtn = document.getElementById('previewBtn');
 const downloadBtn = document.getElementById('downloadBtn');
 const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
 const advancedOptions = document.getElementById('advancedOptions');
-
 const numLabelsEl = document.getElementById('numLabels');
 const labelsContainer = document.getElementById('labelsContainer');
 const allPreviews = document.getElementById('allPreviews');
@@ -150,7 +149,7 @@ const gap12Label = document.getElementById('gap12Label');
 const gap23Label = document.getElementById('gap23Label');
 const textShiftLabel = document.getElementById('textShiftLabel');
 
-/* --- Helpers --- */
+/* update numeric labels */
 function updateNumericLabels(){
   largeSizeLabel.textContent = largeSize.value;
   smallSizeLabel.textContent = smallSize.value;
@@ -164,7 +163,6 @@ function updateNumericLabels(){
 function renderLabelInputs(){
   const n = Math.max(1, parseInt(numLabelsEl.value || 1));
   labelsContainer.innerHTML = '';
-  // label 1 is top inputs; additional labels are 2..n
   for(let i = 2; i <= n; i++){
     const block = document.createElement('div');
     block.className = 'label-block';
@@ -173,6 +171,7 @@ function renderLabelInputs(){
       <label>Line 1: <input class="multi1" type="text" value="1st line"></label>
       <label>Line 2: <input class="multi2" type="text" value="2nd line"></label>
       <label>Line 3: <input class="multi3" type="text" value="3rd line"></label>
+      <label>How many of this design? <input class="qty" type="number" min="1" value="1" style="width:60px"></label>
     `;
     labelsContainer.appendChild(block);
   }
@@ -181,7 +180,7 @@ function renderLabelInputs(){
 /* collect all labels into structured data */
 function collectData(){
   const total = Math.max(1, parseInt(numLabelsEl.value || 1));
-  const result = {
+  const obj = {
     canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:10 },
     global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
     sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
@@ -189,37 +188,39 @@ function collectData(){
     labels: []
   };
 
-  // label 1
-  result.labels.push({
-    name: 'Label 1',
+  // Label 1
+  obj.labels.push({
+    name: "Label 1",
+    qty: parseInt(qty1.value) || 1,
     lines: {
-      line1: { text: line1.value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-      line2: { text: line2.value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-      line3: { text: line3.value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+      line1: { text: line1.value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+      line2: { text: line2.value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+      line3: { text: line3.value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
     }
   });
 
-  // extras
+  // Additional labels
   const m1 = document.querySelectorAll('.multi1');
   const m2 = document.querySelectorAll('.multi2');
   const m3 = document.querySelectorAll('.multi3');
+  const mQty = document.querySelectorAll('.qty');
   for(let i=0;i<m1.length;i++){
-    result.labels.push({
+    obj.labels.push({
       name: `Label ${i+2}`,
+      qty: parseInt(mQty[i].value) || 1,
       lines: {
-        line1: { text: m1[i].value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-        line2: { text: m2[i].value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-        line3: { text: m3[i].value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+        line1: { text: m1[i].value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+        line2: { text: m2[i].value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+        line3: { text: m3[i].value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
       }
     });
   }
 
-  return result;
+  return obj;
 }
 
-/* draw a single label to a canvas (PNG preview). This preserves horizontal scaling and placements. */
+/* draw a single label to a canvas (PNG preview) */
 function drawLabelToCanvas(labelObj, params){
-  // params: canvas geometry + gaps + textShift etc
   const Wpx = mmToPx(params.canvas.width_mm);
   const Hpx = mmToPx(params.canvas.height_mm);
   const radius = mmToPx(params.canvas.corner_radius_mm);
@@ -227,17 +228,14 @@ function drawLabelToCanvas(labelObj, params){
   const circleTopPx = mmToPx(params.canvas.circle_top_mm);
   const marginSidePx = mmToPx(params.canvas.margin_side_mm);
   const topExtraPx = mmToPx(params.canvas.top_margin_extra_mm);
-
   const textShiftPx = mmToPx(params.global.text_shift_mm || 0);
   const gap12Px = mmToPx(params.global.gap12_mm || 0);
   const gap23Px = mmToPx(params.global.linkGaps ? params.global.gap12_mm : params.global.gap23_mm || 0);
 
-  // create canvas
   const c = document.createElement('canvas');
   c.width = Wpx; c.height = Hpx;
   const ctx = c.getContext('2d');
 
-  // background rounded rect (black)
   ctx.fillStyle = '#000';
   ctx.beginPath();
   ctx.moveTo(radius,0);
@@ -252,19 +250,16 @@ function drawLabelToCanvas(labelObj, params){
   ctx.closePath();
   ctx.fill();
 
-  // circle (white)
   ctx.beginPath();
   ctx.arc(Wpx/2, circleTopPx + circleRPx, circleRPx, 0, Math.PI*2);
   ctx.fillStyle = '#fff';
   ctx.fill();
 
-  // prepare lines array
   const lines = [];
-  if(labelObj.lines.line1 && (labelObj.lines.line1.text||'').trim()!=='') lines.push({ text: labelObj.lines.line1.text, size: labelObj.lines.line1.size, font: labelObj.lines.line1.font, bold: !!labelObj.lines.line1.bold, italic: !!labelObj.lines.line1.italic });
-  if(labelObj.lines.line2 && (labelObj.lines.line2.text||'').trim()!=='') lines.push({ text: labelObj.lines.line2.text, size: labelObj.lines.line2.size, font: labelObj.lines.line2.font, bold: !!labelObj.lines.line2.bold, italic: !!labelObj.lines.line2.italic });
-  if(labelObj.lines.line3 && (labelObj.lines.line3.text||'').trim()!=='') lines.push({ text: labelObj.lines.line3.text, size: labelObj.lines.line3.size, font: labelObj.lines.line3.font, bold: !!labelObj.lines.line3.bold, italic: !!labelObj.lines.line3.italic });
+  if(labelObj.lines.line1 && labelObj.lines.line1.text) lines.push({ ...labelObj.lines.line1 });
+  if(labelObj.lines.line2 && labelObj.lines.line2.text) lines.push({ ...labelObj.lines.line2 });
+  if(labelObj.lines.line3 && labelObj.lines.line3.text) lines.push({ ...labelObj.lines.line3 });
 
-  // compute total height in px (approx using font-size)
   let totalH = 0;
   lines.forEach((ln,i)=>{
     totalH += ln.size;
@@ -272,15 +267,11 @@ function drawLabelToCanvas(labelObj, params){
     if(i===1 && lines.length>2) totalH += gap23Px;
   });
 
-  // desired vertical area: between bottom of circle and bottom margin
   const topTextY = circleTopPx + circleRPx + topExtraPx + textShiftPx;
-  const bottomY = Hpx - marginSidePx; // reuse side margin as bottom margin
+  const bottomY = Hpx - marginSidePx;
   const avail = bottomY - topTextY;
-
-  // center block vertically but slightly lower: factor 0.55 (a bit lower than center)
   let startY = topTextY + (avail - totalH) * 0.55 + (lines.length>0 ? lines[0].size*0.75 : 0);
 
-  // draw each line with horizontal scaling if needed
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
@@ -313,20 +304,23 @@ function drawLabelToCanvas(labelObj, params){
   return c;
 }
 
-/* Preview logic: renders one canvas per label (Label1 + extras) */
+/* preview all labels with quantity display */
 function previewLabels(){
   const data = collectData();
   allPreviews.innerHTML = '';
   data.labels.forEach(lbl=>{
     const c = drawLabelToCanvas(lbl, data);
-    // show scaled preview (native px already correct). Use canvas element.
     const wrapper = document.createElement('div');
+    const title = document.createElement('div');
+    title.textContent = `${lbl.name} — ${lbl.qty} copies`;
+    title.style.textAlign = 'center';
+    wrapper.appendChild(title);
     wrapper.appendChild(c);
     allPreviews.appendChild(wrapper);
   });
 }
 
-/* Download JSON */
+/* download JSON */
 function downloadJson(){
   const data = collectData();
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -336,61 +330,20 @@ function downloadJson(){
   a.click();
 }
 
-/* Collect data similarly to earlier spec */
-function collectData(){
-  const obj = {
-    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:10 },
-    global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
-    sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked ? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
-    fonts: { line1: font1.value, line2: font2.value, line3: font3.value, line1_bold: bold1.checked, line1_italic: italic1.checked, line2_bold: bold2.checked, line2_italic: italic2.checked, line3_bold: bold3.checked, line3_italic: italic3.checked },
-    labels: []
-  };
-
-  // Label 1
-  obj.labels.push({
-    name: "Label 1",
-    lines: {
-      line1: { text: line1.value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-      line2: { text: line2.value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-      line3: { text: line3.value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
-    }
-  });
-
-  // Additional labels: inputs .multi1/.multi2/.multi3
-  const m1 = document.querySelectorAll('.multi1');
-  const m2 = document.querySelectorAll('.multi2');
-  const m3 = document.querySelectorAll('.multi3');
-  for(let i=0;i<m1.length;i++){
-    obj.labels.push({
-      name: `Label ${i+2}`,
-      lines: {
-        line1: { text: m1[i].value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
-        line2: { text: m2[i].value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
-        line3: { text: m3[i].value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
-      }
-    });
-  }
-
-  return obj;
-}
-
 /* UI events */
 toggleAdvancedBtn.addEventListener('click', ()=>{
-  advancedOptions.style.display = advancedOptions.style.display === 'block' ? 'none' : 'block';
-  toggleAdvancedBtn.textContent = advancedOptions.style.display === 'block' ? 'Hide Advanced Options' : 'Show Advanced Options';
+  advancedOptions.style.display = advancedOptions.style.display==='block'?'none':'block';
+  toggleAdvancedBtn.textContent = advancedOptions.style.display==='block'?'Hide Advanced Options':'Show Advanced Options';
 });
 
 numLabelsEl.addEventListener('change', renderLabelInputs);
-renderLabelInputs(); // initial
+renderLabelInputs();
 
-// update numeric labels on sliders
-[largeSize, smallSize, line3Size, gap12, gap23, textShift].forEach(el => el.addEventListener('input', updateNumericLabels));
+[largeSize, smallSize, line3Size, gap12, gap23, textShift].forEach(el=>el.addEventListener('input', updateNumericLabels));
 updateNumericLabels();
 
-// buttons
 previewBtn.addEventListener('click', previewLabels);
 downloadBtn.addEventListener('click', downloadJson);
-
 </script>
 </body>
 </html>
