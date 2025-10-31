@@ -1,260 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Label Generator (JSON Export)</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Label Generator (JSON Export) — Fixed</title>
 <style>
-  body { font-family: Arial, sans-serif; margin:20px; display:flex; flex-direction:column; align-items:center; }
-  h2 { margin-bottom:10px; }
-  form { width:100%; max-width:800px; margin-bottom:20px; }
-  label { display:block; margin-bottom:6px; }
-  input[type="text"], input[type="number"] { width:100%; padding:4px; }
-  .slider-container { margin:8px 0; }
-  .advanced { display:none; border:1px solid #ccc; padding:10px; margin-top:10px; border-radius:8px; }
-  button { padding:6px 12px; }
-  .button-row { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
-  canvas { border:1px solid #ccc; border-radius:8px; }
-  #allPreviews { display:flex; flex-direction:column; gap:38px; margin-top:20px; } /* ~10mm spacing */
+  body{font-family:Arial,Helvetica,sans-serif;margin:18px;display:flex;flex-direction:column;align-items:center}
+  form{width:100%;max-width:900px}
+  label{display:block;margin:6px 0}
+  input[type="text"],input[type="number"],select{width:100%;padding:6px;box-sizing:border-box}
+  .button-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .advanced{display:none;border:1px solid #ddd;padding:10px;border-radius:6px;margin-top:8px}
+  .label-block{border:1px solid #eee;padding:8px;margin:8px 0;border-radius:6px}
+  #allPreviews{display:flex;flex-direction:column;gap:38px;margin-top:18px}
+  canvas{width:378px;height:283px;border:1px solid #ccc;border-radius:6px}
 </style>
 </head>
 <body>
+  <h2>Label Generator</h2>
+  <p style="max-width:900px;text-align:center">
+    Edit Label 1 and add more labels below. Click <strong>Preview Label(s)</strong> to render PNG previews. Click <strong>Download Layout Instructions (JSON)</strong> to export a JSON file describing every parameter.
+  </p>
 
-<h2>Label Generator</h2>
-<p>Enter text for each line. All fields are optional. Adjust settings as needed, then click <b>Preview Label(s)</b> to view and export.</p>
+  <form id="mainForm" onsubmit="return false;">
+    <h3>Label 1 (Primary Label)</h3>
+    <label>Line 1: <input id="line1" type="text" value="1st line"></label>
+    <label>Line 2: <input id="line2" type="text" value="2nd line"></label>
+    <label>Line 3: <input id="line3" type="text" value="3rd line"></label>
 
-<form id="labelForm">
-  <h3>Label 1 (Primary Label - this is used to design the layout of your labels. I suggest you use the one where you want the most text for this)</h3>
-  <label>Line 1: <input id="line1" type="text" value="1st line"></label>
-  <label>Line 2: <input id="line2" type="text" value="2nd line"></label>
-  <label>Line 3: <input id="line3" type="text" value="3rd line"></label>
-
-  <div class="button-row">
-    <button type="button" id="previewBtn">Preview Label(s)</button>
-    <button type="button" id="downloadBtn">Download Layout Instructions (JSON)</button>
-    <button type="button" id="toggleAdvanced">Show Advanced Options</button>
-  </div>
-
-  <div class="advanced" id="advancedOptions">
-    <div class="slider-container">
-      <label>Large text size (line 1): <span id="largeSizeLabel">54</span>
-      <input id="largeSize" type="range" min="20" max="100" value="54"></label>
-    </div>
-    <div class="slider-container">
-      <label>Small text size (line 2): <span id="smallSizeLabel">27</span>
-      <input id="smallSize" type="range" min="10" max="60" value="27"></label>
+    <div class="button-row" id="topButtons">
+      <button id="previewBtn" type="button">Preview Label(s)</button>
+      <button id="downloadBtn" type="button">Download Layout Instructions (JSON)</button>
+      <button id="toggleAdvanced" type="button">Show Advanced Options</button>
     </div>
 
-    <div class="slider-container">
-      <label>Line 3 text size: <span id="line3SizeLabel">27</span>
-      <input id="line3Size" type="range" min="10" max="60" value="27"></label>
-      <label><input type="checkbox" id="link23" checked> Same as line 2 size</label>
-    </div>
+    <div class="advanced" id="advancedOptions">
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <label>Large text size (line 1): <span id="largeSizeLabel">54</span>
+            <input id="largeSize" type="range" min="20" max="100" value="54">
+          </label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Small text size (line 2): <span id="smallSizeLabel">27</span>
+            <input id="smallSize" type="range" min="10" max="60" value="27">
+          </label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Line 3 size: <span id="line3SizeLabel">27</span>
+            <input id="line3Size" type="range" min="10" max="60" value="27">
+          </label>
+          <label><input id="link23" type="checkbox" checked> Link line3 to line2</label>
+        </div>
+      </div>
 
-    <div class="slider-container">
-      <label>Spacing line1→line2: <span id="gap12Label">4</span>
-      <input id="gap12" type="range" min="0" max="20" value="4"></label>
-      <label>Spacing line2→line3: <span id="gap23Label">3</span>
-      <input id="gap23" type="range" min="0" max="20" value="3"></label>
-      <label><input type="checkbox" id="linkGaps"> line2→line3 same as line1→line2</label>
-    </div>
+      <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <label>Gap line1→line2: <span id="gap12Label">4</span>
+            <input id="gap12" type="range" min="0" max="20" value="4">
+          </label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Gap line2→line3: <span id="gap23Label">3</span>
+            <input id="gap23" type="range" min="0" max="20" value="3">
+          </label>
+          <label><input id="linkGaps" type="checkbox"> Make gap2-3 = gap1-2</label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Text vertical shift: <span id="textShiftLabel">0</span>
+            <input id="textShift" type="range" min="-20" max="20" value="0">
+          </label>
+        </div>
+      </div>
 
-    <div class="slider-container">
-      <label>Shift all text up/down: <span id="textShiftLabel">0</span>
-      <input id="textShift" type="range" min="-20" max="20" value="0"></label>
+      <div style="margin-top:10px;display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:180px">
+          <label>Line 1 font
+            <select id="font1"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+          </label>
+          <label><input id="bold1" type="checkbox" checked> Bold</label>
+          <label><input id="italic1" type="checkbox"> Italic</label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Line 2 font
+            <select id="font2"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+          </label>
+          <label><input id="bold2" type="checkbox"> Bold</label>
+          <label><input id="italic2" type="checkbox" checked> Italic</label>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label>Line 3 font
+            <select id="font3"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
+          </label>
+          <label><input id="bold3" type="checkbox"> Bold</label>
+          <label><input id="italic3" type="checkbox"> Italic</label>
+        </div>
+      </div>
     </div>
+  </form>
 
-    <div class="slider-container">
-      <label>Line 1 font:
-        <select id="font1"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
-      </label>
-      <label><input type="checkbox" id="bold1" checked> Bold</label>
-      <label><input type="checkbox" id="italic1"> Italic</label>
-    </div>
-    <div class="slider-container">
-      <label>Line 2 font:
-        <select id="font2"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
-      </label>
-      <label><input type="checkbox" id="bold2"> Bold</label>
-      <label><input type="checkbox" id="italic2" checked> Italic</label>
-    </div>
-    <div class="slider-container">
-      <label>Line 3 font:
-        <select id="font3"><option selected>Arial</option><option>Verdana</option><option>Courier New</option></select>
-      </label>
-      <label><input type="checkbox" id="bold3"> Bold</label>
-      <label><input type="checkbox" id="italic3"> Italic</label>
-    </div>
-  </div>
-</form>
+  <h3>Multiple Labels</h3>
+  <label>Total labels (including label 1): <input id="numLabels" type="number" min="1" value="1"></label>
+  <div id="labelsContainer"></div>
 
-<h3>Multiple Labels</h3>
-<label>Total labels: <input id="numLabels" type="number" min="1" value="1"></label>
-<div id="labelsContainer"></div>
-
-<div id="allPreviews"></div>
+  <div id="allPreviews"></div>
 
 <script>
-const mmToPx = mm => mm * 3.78;
+/* --- Utilities --- */
+const mmToPx = mm => Math.round(mm * 3.78);
 
-// Advanced toggle
-document.getElementById('toggleAdvanced').addEventListener('click',()=>{
-  const adv=document.getElementById('advancedOptions');
-  const btn=document.getElementById('toggleAdvanced');
-  adv.style.display = adv.style.display==='none'?'block':'none';
-  btn.textContent = adv.style.display==='none'?'Show Advanced Options':'Hide Advanced Options';
-});
+/* --- DOM refs --- */
+const line1 = document.getElementById('line1');
+const line2 = document.getElementById('line2');
+const line3 = document.getElementById('line3');
 
-// Dynamic label fields
+const previewBtn = document.getElementById('previewBtn');
+const downloadBtn = document.getElementById('downloadBtn');
+const toggleAdvancedBtn = document.getElementById('toggleAdvanced');
+const advancedOptions = document.getElementById('advancedOptions');
+
+const numLabelsEl = document.getElementById('numLabels');
+const labelsContainer = document.getElementById('labelsContainer');
+const allPreviews = document.getElementById('allPreviews');
+
+/* advanced controls */
+const largeSize = document.getElementById('largeSize');
+const smallSize = document.getElementById('smallSize');
+const line3Size = document.getElementById('line3Size');
+const link23 = document.getElementById('link23');
+const gap12 = document.getElementById('gap12');
+const gap23 = document.getElementById('gap23');
+const linkGaps = document.getElementById('linkGaps');
+const textShift = document.getElementById('textShift');
+const font1 = document.getElementById('font1');
+const font2 = document.getElementById('font2');
+const font3 = document.getElementById('font3');
+const bold1 = document.getElementById('bold1');
+const italic1 = document.getElementById('italic1');
+const bold2 = document.getElementById('bold2');
+const italic2 = document.getElementById('italic2');
+const bold3 = document.getElementById('bold3');
+const italic3 = document.getElementById('italic3');
+
+/* label value displays */
+const largeSizeLabel = document.getElementById('largeSizeLabel');
+const smallSizeLabel = document.getElementById('smallSizeLabel');
+const line3SizeLabel = document.getElementById('line3SizeLabel');
+const gap12Label = document.getElementById('gap12Label');
+const gap23Label = document.getElementById('gap23Label');
+const textShiftLabel = document.getElementById('textShiftLabel');
+
+/* --- Helpers --- */
+function updateNumericLabels(){
+  largeSizeLabel.textContent = largeSize.value;
+  smallSizeLabel.textContent = smallSize.value;
+  line3SizeLabel.textContent = line3Size.value;
+  gap12Label.textContent = gap12.value;
+  gap23Label.textContent = gap23.value;
+  textShiftLabel.textContent = textShift.value;
+}
+
+/* render inputs for labels 2..N */
 function renderLabelInputs(){
-  const n=parseInt(document.getElementById('numLabels').value);
-  const container=document.getElementById('labelsContainer');
-  container.innerHTML='';
-  for(let i=2;i<=n;i++){
-    const div=document.createElement('div');
-    div.innerHTML=`<h4>Label ${i}</h4>
-    <label>Line 1: <input class="multi1" type="text" value="1st line"></label>
-    <label>Line 2: <input class="multi2" type="text" value="2nd line"></label>
-    <label>Line 3: <input class="multi3" type="text" value="3rd line"></label>`;
-    container.appendChild(div);
+  const n = Math.max(1, parseInt(numLabelsEl.value || 1));
+  labelsContainer.innerHTML = '';
+  // label 1 is top inputs; additional labels are 2..n
+  for(let i = 2; i <= n; i++){
+    const block = document.createElement('div');
+    block.className = 'label-block';
+    block.innerHTML = `
+      <h4>Label ${i}</h4>
+      <label>Line 1: <input class="multi1" type="text" value="1st line"></label>
+      <label>Line 2: <input class="multi2" type="text" value="2nd line"></label>
+      <label>Line 3: <input class="multi3" type="text" value="3rd line"></label>
+    `;
+    labelsContainer.appendChild(block);
   }
 }
-document.getElementById('numLabels').addEventListener('change',renderLabelInputs);
-renderLabelInputs();
 
-// Draw label
-function drawLabel(data){
-  const canvas=document.createElement('canvas');
-  canvas.width=mmToPx(100);
-  canvas.height=mmToPx(75);
-  const ctx=canvas.getContext('2d');
-  const radius=mmToPx(2);
-  const w=canvas.width, h=canvas.height;
-  
-  // Background
-  ctx.fillStyle='black';
-  ctx.beginPath();
-  ctx.moveTo(radius,0);
-  ctx.lineTo(w-radius,0);
-  ctx.quadraticCurveTo(w,0,w,radius);
-  ctx.lineTo(w,h-radius);
-  ctx.quadraticCurveTo(w,h,w-radius,h);
-  ctx.lineTo(radius,h);
-  ctx.quadraticCurveTo(0,h,0,h-radius);
-  ctx.lineTo(0,radius);
-  ctx.quadraticCurveTo(0,0,radius,0);
-  ctx.fill();
-
-  // White circle
-  const circleR=mmToPx(3);
-  const circleY=mmToPx(6+3);
-  ctx.beginPath();
-  ctx.arc(w/2,circleY,circleR,0,Math.PI*2);
-  ctx.fillStyle='white';
-  ctx.fill();
-
-  // Text block baseline (lowered ~2mm)
-  const marginTop=mmToPx(18+data.textShift);
-  const spacing12=mmToPx(data.gap12);
-  const spacing23=mmToPx(data.gap23);
-  const marginSide=mmToPx(6);
-  
-  let y=marginTop;
-  const lines=[data.line1,data.line2,data.line3].filter(l=>l.text);
-  lines.forEach((l,i)=>{
-    let fontStr='';
-    if(l.italic) fontStr+='italic ';
-    if(l.bold) fontStr+='bold ';
-    fontStr+=`${l.font_size}px ${l.font}`;
-    ctx.font=fontStr;
-    ctx.textAlign='center';
-    ctx.textBaseline='top';
-    ctx.fillStyle='white';
-    // Fit scaling
-    let textWidth = ctx.measureText(l.text).width;
-    const maxWidth = w - marginSide*2;
-    if(textWidth > maxWidth){
-      const scale = maxWidth / textWidth;
-      ctx.save();
-      ctx.translate(w/2, y);
-      ctx.scale(scale, scale);
-      ctx.fillText(l.text, 0, 0);
-      ctx.restore();
-    } else {
-      ctx.fillText(l.text, w/2, y);
-    }
-    y+=l.font_size+(i===0?spacing12:spacing23);
-  });
-  return canvas;
-}
-
-// Collect data
+/* collect all labels into structured data */
 function collectData(){
-  const num=parseInt(document.getElementById('numLabels').value);
-  const base={
-    canvas:{width_mm:100,height_mm:75,corner_radius_mm:2,circle_diameter_mm:6,circle_top_mm:6,margin_side_mm:6,margin_top_mm:18},
-    global:{text_shift_mm:parseFloat(textShift.value),gap12_mm:parseFloat(gap12.value),gap23_mm:parseFloat(gap23.value)},
-    labels:[]
+  const total = Math.max(1, parseInt(numLabelsEl.value || 1));
+  const result = {
+    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:18 },
+    global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
+    sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
+    fonts: { line1: font1.value, line2: font2.value, line3: font3.value, line1_bold: bold1.checked, line1_italic: italic1.checked, line2_bold: bold2.checked, line2_italic: italic2.checked, line3_bold: bold3.checked, line3_italic: italic3.checked },
+    labels: []
   };
 
-  const l1={line1:line1.value,line2:line2.value,line3:line3.value};
-  base.labels.push({
-    name:'Label 1',
-    lines:{
-      line1:{text:l1.line1,font_family:font1.value,font_size:parseFloat(large.value),bold:bold1.checked,italic:italic1.checked},
-      line2:{text:l1.line2,font_family:font2.value,font_size:parseFloat(small.value),bold:bold2.checked,italic:italic2.checked},
-      line3:{text:l1.line3,font_family:font3.value,font_size:parseFloat(line3Size.value),bold:bold3.checked,italic:italic3.checked}
+  // label 1
+  result.labels.push({
+    name: 'Label 1',
+    lines: {
+      line1: { text: line1.value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+      line2: { text: line2.value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+      line3: { text: line3.value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
     }
   });
 
-  const multi1=document.querySelectorAll('.multi1');
-  const multi2=document.querySelectorAll('.multi2');
-  const multi3=document.querySelectorAll('.multi3');
-  for(let i=0;i<multi1.length;i++){
-    base.labels.push({
-      name:`Label ${i+2}`,
-      lines:{
-        line1:{text:multi1[i].value,font_family:font1.value,font_size:parseFloat(large.value),bold:bold1.checked,italic:italic1.checked},
-        line2:{text:multi2[i].value,font_family:font2.value,font_size:parseFloat(small.value),bold:bold2.checked,italic:italic2.checked},
-        line3:{text:multi3[i].value,font_family:font3.value,font_size:parseFloat(line3Size.value),bold:bold3.checked,italic:italic3.checked}
+  // extras
+  const m1 = document.querySelectorAll('.multi1');
+  const m2 = document.querySelectorAll('.multi2');
+  const m3 = document.querySelectorAll('.multi3');
+  for(let i=0;i<m1.length;i++){
+    result.labels.push({
+      name: `Label ${i+2}`,
+      lines: {
+        line1: { text: m1[i].value || '', font: font1.value, size: result.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+        line2: { text: m2[i].value || '', font: font2.value, size: result.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+        line3: { text: m3[i].value || '', font: font3.value, size: result.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
       }
     });
   }
-  return base;
+
+  return result;
 }
 
-// Preview all
-function previewAll(){
-  const data=collectData();
-  const container=document.getElementById('allPreviews');
-  container.innerHTML='';
-  data.labels.forEach(label=>{
-    const lData={
-      line1:label.lines.line1,
-      line2:label.lines.line2,
-      line3:label.lines.line3,
-      gap12:data.global.gap12_mm,
-      gap23:data.global.gap23_mm,
-      textShift:data.global.text_shift_mm
-    };
-    container.appendChild(drawLabel(lData));
+/* draw a single label to a canvas (PNG preview). This preserves horizontal scaling and placements. */
+function drawLabelToCanvas(labelObj, params){
+  // params: canvas geometry + gaps + textShift etc
+  const Wpx = mmToPx(params.canvas.width_mm);
+  const Hpx = mmToPx(params.canvas.height_mm);
+  const radius = mmToPx(params.canvas.corner_radius_mm);
+  const circleRPx = mmToPx(params.canvas.circle_diameter_mm / 2);
+  const circleTopPx = mmToPx(params.canvas.circle_top_mm);
+  const marginSidePx = mmToPx(params.canvas.margin_side_mm);
+  const topExtraPx = mmToPx(params.canvas.top_margin_extra_mm);
+
+  const textShiftPx = mmToPx(params.global.text_shift_mm || 0);
+  const gap12Px = mmToPx(params.global.gap12_mm || 0);
+  const gap23Px = mmToPx(params.global.linkGaps ? params.global.gap12_mm : params.global.gap23_mm || 0);
+
+  // create canvas
+  const c = document.createElement('canvas');
+  c.width = Wpx; c.height = Hpx;
+  const ctx = c.getContext('2d');
+
+  // background rounded rect (black)
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.moveTo(radius,0);
+  ctx.lineTo(Wpx-radius,0);
+  ctx.quadraticCurveTo(Wpx,0,Wpx,radius);
+  ctx.lineTo(Wpx,Hpx-radius);
+  ctx.quadraticCurveTo(Wpx,Hpx,Wpx-radius,Hpx);
+  ctx.lineTo(radius,Hpx);
+  ctx.quadraticCurveTo(0,Hpx,0,Hpx-radius);
+  ctx.lineTo(0,radius);
+  ctx.quadraticCurveTo(0,0,radius,0);
+  ctx.closePath();
+  ctx.fill();
+
+  // circle (white)
+  ctx.beginPath();
+  ctx.arc(Wpx/2, circleTopPx + circleRPx, circleRPx, 0, Math.PI*2);
+  ctx.fillStyle = '#fff';
+  ctx.fill();
+
+  // prepare lines array
+  const lines = [];
+  if(labelObj.lines.line1 && (labelObj.lines.line1.text||'').trim()!=='') lines.push({ text: labelObj.lines.line1.text, size: labelObj.lines.line1.size, font: labelObj.lines.line1.font, bold: !!labelObj.lines.line1.bold, italic: !!labelObj.lines.line1.italic });
+  if(labelObj.lines.line2 && (labelObj.lines.line2.text||'').trim()!=='') lines.push({ text: labelObj.lines.line2.text, size: labelObj.lines.line2.size, font: labelObj.lines.line2.font, bold: !!labelObj.lines.line2.bold, italic: !!labelObj.lines.line2.italic });
+  if(labelObj.lines.line3 && (labelObj.lines.line3.text||'').trim()!=='') lines.push({ text: labelObj.lines.line3.text, size: labelObj.lines.line3.size, font: labelObj.lines.line3.font, bold: !!labelObj.lines.line3.bold, italic: !!labelObj.lines.line3.italic });
+
+  // compute total height in px (approx using font-size)
+  let totalH = 0;
+  lines.forEach((ln,i)=>{
+    totalH += ln.size;
+    if(i===0 && lines.length>1) totalH += gap12Px;
+    if(i===1 && lines.length>2) totalH += gap23Px;
+  });
+
+  // desired vertical area: between bottom of circle and bottom margin
+  const topTextY = circleTopPx + circleRPx + topExtraPx + textShiftPx;
+  const bottomY = Hpx - marginSidePx; // reuse side margin as bottom margin
+  const avail = bottomY - topTextY;
+
+  // center block vertically but slightly lower: factor 0.55 (a bit lower than center)
+  let startY = topTextY + (avail - totalH) * 0.55 + (lines.length>0 ? lines[0].size*0.75 : 0);
+
+  // draw each line with horizontal scaling if needed
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+
+  lines.forEach((ln,i)=>{
+    let fontStr = '';
+    if(ln.italic) fontStr += 'italic ';
+    if(ln.bold) fontStr += 'bold ';
+    fontStr += `${ln.size}px ${ln.font || 'Arial'}`;
+    ctx.font = fontStr;
+
+    const maxWidth = Wpx - marginSidePx * 2;
+    const measured = ctx.measureText(ln.text).width;
+    const scaleX = Math.min(1, maxWidth / measured);
+
+    if(scaleX < 1){
+      ctx.save();
+      ctx.translate(Wpx/2, startY);
+      ctx.scale(scaleX, 1);
+      ctx.fillText(ln.text, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.fillText(ln.text, Wpx/2, startY);
+    }
+
+    if(i===0 && lines.length>1) startY += gap12Px + (lines[1] ? lines[1].size : 0);
+    else if(i===1 && lines.length>2) startY += gap23Px + (lines[2] ? lines[2].size : 0);
+  });
+
+  return c;
+}
+
+/* Preview logic: renders one canvas per label (Label1 + extras) */
+function previewLabels(){
+  const data = collectData();
+  allPreviews.innerHTML = '';
+  data.labels.forEach(lbl=>{
+    const c = drawLabelToCanvas(lbl, data);
+    // show scaled preview (native px already correct). Use canvas element.
+    const wrapper = document.createElement('div');
+    wrapper.appendChild(c);
+    allPreviews.appendChild(wrapper);
   });
 }
 
-// Download JSON
-function downloadJSON(){
-  const data=collectData();
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'text/plain'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='labels.txt';
+/* Download JSON */
+function downloadJson(){
+  const data = collectData();
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'labels.json';
   a.click();
 }
 
-document.getElementById('previewBtn').addEventListener('click',previewAll);
-document.getElementById('downloadBtn').addEventListener('click',downloadJSON);
-</script>
+/* Collect data similarly to earlier spec */
+function collectData(){
+  const obj = {
+    canvas: { width_mm:100, height_mm:75, corner_radius_mm:2, circle_diameter_mm:6, circle_top_mm:6, margin_side_mm:6, top_margin_extra_mm:18 },
+    global: { text_shift_mm: parseFloat(textShift.value || 0), gap12_mm: parseFloat(gap12.value||0), gap23_mm: parseFloat(gap23.value||0), linkGaps: linkGaps.checked, linkLine3To2: link23.checked },
+    sizes: { line1_size: parseFloat(largeSize.value), line2_size: parseFloat(smallSize.value), line3_size: link23.checked ? parseFloat(smallSize.value) : parseFloat(line3Size.value) },
+    fonts: { line1: font1.value, line2: font2.value, line3: font3.value, line1_bold: bold1.checked, line1_italic: italic1.checked, line2_bold: bold2.checked, line2_italic: italic2.checked, line3_bold: bold3.checked, line3_italic: italic3.checked },
+    labels: []
+  };
 
+  // Label 1
+  obj.labels.push({
+    name: "Label 1",
+    lines: {
+      line1: { text: line1.value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+      line2: { text: line2.value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+      line3: { text: line3.value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+    }
+  });
+
+  // Additional labels: inputs .multi1/.multi2/.multi3
+  const m1 = document.querySelectorAll('.multi1');
+  const m2 = document.querySelectorAll('.multi2');
+  const m3 = document.querySelectorAll('.multi3');
+  for(let i=0;i<m1.length;i++){
+    obj.labels.push({
+      name: `Label ${i+2}`,
+      lines: {
+        line1: { text: m1[i].value || '', font: font1.value, size: obj.sizes.line1_size, bold: bold1.checked, italic: italic1.checked },
+        line2: { text: m2[i].value || '', font: font2.value, size: obj.sizes.line2_size, bold: bold2.checked, italic: italic2.checked },
+        line3: { text: m3[i].value || '', font: font3.value, size: obj.sizes.line3_size, bold: bold3.checked, italic: italic3.checked }
+      }
+    });
+  }
+
+  return obj;
+}
+
+/* UI events */
+toggleAdvancedBtn.addEventListener('click', ()=>{
+  advancedOptions.style.display = advancedOptions.style.display === 'block' ? 'none' : 'block';
+  toggleAdvancedBtn.textContent = advancedOptions.style.display === 'block' ? 'Hide Advanced Options' : 'Show Advanced Options';
+});
+
+numLabelsEl.addEventListener('change', renderLabelInputs);
+renderLabelInputs(); // initial
+
+// update numeric labels on sliders
+[largeSize, smallSize, line3Size, gap12, gap23, textShift].forEach(el => el.addEventListener('input', updateNumericLabels));
+updateNumericLabels();
+
+// buttons
+previewBtn.addEventListener('click', previewLabels);
+downloadBtn.addEventListener('click', downloadJson);
+
+</script>
 </body>
 </html>
-
